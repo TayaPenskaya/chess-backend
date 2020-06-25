@@ -15,6 +15,11 @@ CREATE USER 'player'@'127.0.0.1' IDENTIFIED BY 'root';
 GRANT ALL PRIVILEGES ON * . * TO 'player'@'127.0.0.1';
 FLUSH PRIVILEGES;
 ```
-Start project:
+## Start:
 ```
+composer run-script start
+```
+## Test:
+```
+composer run-script test
 ```
