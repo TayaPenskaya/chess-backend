@@ -20,30 +20,23 @@ class GameLogic
 
     private Board $board;
     private string $history;
-    private int $counter;
-    private string $tasty_list;
+    private int $counter = 1;
     private string $move_color;
     private bool $is_end;
-    private string $key_of_white_king;
-    private string $key_of_black_king;
 
-    public function __construct() {
-        $this->board = new Board();
-        $this->history = '';
-        $this->tasty_list = '';
-        $this->counter = 1;
-        $this->move_color = Constants::colors[0];
-        $this->is_end = false;
-        $this->key_of_white_king = "e1";
-        $this->key_of_black_king = "e8";
+    public function __construct(Board $board, $move_color, $is_end, $history) {
+        $this->board = $board;
+        $this->move_color = $move_color;
+        $this->is_end = $is_end;
+        $this->history = $history;
     }
 
     /**
-     * @return array
+     * @return Board
      */
-    public function get_board(): array
+    public function get_board(): Board
     {
-        return $this->board->get_board();
+        return $this->board;
     }
 
     /**
@@ -52,14 +45,6 @@ class GameLogic
     public function get_history(): string
     {
         return $this->history;
-    }
-
-    /**
-     * @return string
-     */
-    public function get_tasty_list(): string
-    {
-        return $this->tasty_list;
     }
 
     /**
@@ -78,6 +63,10 @@ class GameLogic
         return $this->move_color;
     }
 
+    public static function init() {
+        return new GameLogic(new Board(), Constants::colors[0], false, '');
+    }
+
     public function make_move(string $from, string $to) : string {
         try {
             if ($this->board->is_inside_board($from)) {
@@ -92,14 +81,10 @@ class GameLogic
                                     if ($yum_piece instanceof King) {
                                         throw new InedibleKingException();
                                     }
-                                    $this->make_note_in_tasty_list($yum_piece);
                                     $is_eaten = true;
                                 }
                                 $this->board->remove_piece_from_square($from);
                                 $this->board->set_piece_on_square($to, $piece_from);
-                                if ($piece_from instanceof King) {
-                                    $this->update_king_keys($to);
-                                }
                                 $this->make_note_in_history($from, $to, $piece_from, $is_eaten);
                                 $this->change_move_color();
                                 if ($this->is_king_at_gunpoint()) {
@@ -126,11 +111,13 @@ class GameLogic
             if (!$this->board->is_square_empty($key)) {
                 $piece = $this->board->get_piece_of_square($key);
                 if ($piece->get_color() == Constants::colors[0]) {
-                    if ($piece->is_valid_move($key, $this->key_of_black_king, $this->board)) {
+                    $black_king_key = $this->find_black_king();
+                    if ($piece->is_valid_move($key, $black_king_key, $this->board)) {
                         return true;
                     }
                 } else {
-                    if ($piece->is_valid_move($key, $this->key_of_white_king, $this->board)) {
+                    $white_king_key = $this->find_white_king();
+                    if ($piece->is_valid_move($key, $white_king_key, $this->board)) {
                         return true;
                     }
                 }
@@ -139,20 +126,32 @@ class GameLogic
         return false;
     }
 
-    private function update_king_keys($key) : void {
-        if ($this->move_color == Constants::colors[0]) {
-            $this->key_of_white_king = $key;
-        } else {
-            $this->key_of_black_king = $key;
+    private function find_black_king() : string {
+        foreach (array_keys($this->board->get_board()) as $key) {
+            if (!$this->board->is_square_empty($key)) {
+                $piece = $this->board->get_piece_of_square($key);
+                if ($piece instanceof King && $piece->get_color() == Constants::colors[1]) {
+                    return $key;
+                }
+            }
         }
+        return '';
+    }
+
+    private function find_white_king() : string {
+        foreach (array_keys($this->board->get_board()) as $key) {
+            if (!$this->board->is_square_empty($key)) {
+                $piece = $this->board->get_piece_of_square($key);
+                if ($piece instanceof King && $piece->get_color() == Constants::colors[0]) {
+                    return $key;
+                }
+            }
+        }
+        return '';
     }
 
     private function change_move_color() : void {
         $this->move_color = ($this->move_color == Constants::colors[0]) ? Constants::colors[1] : Constants::colors[0];
-    }
-
-    private function make_note_in_tasty_list(Piece $piece) : void {
-        $this->tasty_list .= $piece. "\n";
     }
 
     private function make_note_in_history(string $from, string $to, Piece $piece, bool $is_eaten) : void {

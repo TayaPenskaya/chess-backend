@@ -3,7 +3,6 @@
 namespace App\Entity;
 
 use App\Logic\Components\Board;
-use App\Logic\GameLogic;
 use App\Repository\GameRepository;
 use Doctrine\ORM\Mapping as ORM;
 
@@ -39,11 +38,6 @@ class Game
      */
     private $is_end;
 
-    /**
-     * @ORM\Column(type="text", nullable=true)
-     */
-    private $logic;
-
     public function get_id(): ?int
     {
         return $this->id;
@@ -54,7 +48,7 @@ class Game
         return $this->board;
     }
 
-    public function set_board(array $board): self
+    public function set_board(Board $board): self
     {
         $this->board = serialize($board);
 
@@ -93,19 +87,6 @@ class Game
     public function set_is_end(bool $is_end): self
     {
         $this->is_end = $is_end;
-
-        return $this;
-    }
-
-    public function get_logic(): ?GameLogic
-    {
-        $logic = unserialize($this->logic);
-        return ($logic instanceof GameLogic) ? $logic : new GameLogic();
-    }
-
-    public function set_logic(GameLogic $logic): self
-    {
-        $this->board = serialize($logic);
 
         return $this;
     }

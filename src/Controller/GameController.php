@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Entity\Game;
+use App\Logic\Components\Board;
 use App\Logic\GameLogic;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
@@ -21,13 +22,13 @@ class GameController extends AbstractController
      * @Route("/start-game", methods={"GET"})
      */
     public function start_game() : Response {
-        $game = new GameLogic();
+        $game = GameLogic::init();
         $entity = new Game();
-        $entity->set_logic($game);
         $entity->set_board($game->get_board());
         $entity->set_history($game->get_history());
         $entity->set_move_color($game->get_move_color());
         $entity->set_is_end($game->get_is_end());
+
         $em = $this->getDoctrine()->getManager();
         $em->persist($entity);
         $em->flush();
@@ -75,7 +76,7 @@ class GameController extends AbstractController
             throw $this->createNotFoundException('No game created for this id: '.$id);
         }
 
-        $board = unserialize($game->get_board());
+        $board = unserialize($game->get_board())->get_board();
         $str = implode(', ', array_map(
                 function ($v, $k) {
                     return ($v != NULL) ? $k.'='.$v : $k;
@@ -131,18 +132,13 @@ class GameController extends AbstractController
             throw new \Exception('The game is over, start a new one');
         }
 
-        $game_logic = $game->get_logic();
+        $game_logic = new GameLogic(unserialize($game->get_board()), $game->get_move_color(), $game->get_is_end(), $game->get_history());
         $res = $game_logic->make_move($from, $to);
-
 
         $game->set_move_color($game_logic->get_move_color());
         $game->set_is_end($game_logic->get_is_end());
         $game->set_history($game_logic->get_history());
         $game->set_board($game_logic->get_board());
-//        if (unserialize($game->get_board()) == $game_logic->get_board()){
-//            echo "AHAHAH";
-//        }
-        $game->set_logic($game_logic);
 
         $em = $this->getDoctrine()->getManager();
         $em->persist($game);
