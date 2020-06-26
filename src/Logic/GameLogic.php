@@ -20,7 +20,6 @@ class GameLogic
 
     private Board $board;
     private string $history;
-    private int $counter = 1;
     private string $move_color;
     private bool $is_end;
 
@@ -96,7 +95,7 @@ class GameLogic
                         }
                         throw new WrongPieceColorException($this->move_color);
                     }
-                    throw new EmptySquareException($to);
+                    throw new EmptySquareException($from);
                 }
                 throw new InvalidSquareException($to);
             }
@@ -155,12 +154,8 @@ class GameLogic
     }
 
     private function make_note_in_history(string $from, string $to, Piece $piece, bool $is_eaten) : void {
-        if ($piece->get_color() == Constants::colors[0]){
-            $this->history .= $this->counter. ". ";
-        }
-        $this->history .= ($is_eaten) ? $piece. $from. "x". $to. " " : $piece. $from. "--". $to. " ";
+        $this->history .= ($is_eaten) ? $piece. $from. "x". $to. "  " : $piece. $from. "--". $to. "  ";
         if ($piece->get_color() == Constants::colors[1]) {
-            $this->counter++;
             $this->history .= "\n";
         }
     }
