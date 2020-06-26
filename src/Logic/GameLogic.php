@@ -66,6 +66,16 @@ class GameLogic
         return new GameLogic(new Board(), Constants::colors[0], false, '');
     }
 
+    /**
+     * Tries to make a move from one place to another.
+     * Checks that the move is in accordance with the rules.
+     * The game is over if the king falls under the shah.
+     *
+     * @access private
+     * @param string $from Square from
+     * @param string $to Square to
+     * @return string Result of operation
+     */
     public function make_move(string $from, string $to) : string {
         try {
             if ($this->board->is_inside_board($from)) {
