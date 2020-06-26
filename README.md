@@ -23,3 +23,13 @@ composer run-script start
 ```
 composer run-script test
 ```
+## How to play(routes):
+```
+/start-game                      - to start game ^_^
+/game/{id}                       - something about game with such id
+/game/{id}/move-color            - current move color
+/game/{id}/board                 - board of the game with such id
+/game/{id}/status                - the game is over or is still going on
+/game/{id}/history               - history of moves
+/game/{id}/make-move/{from}/{to} - make move from-to
+```
